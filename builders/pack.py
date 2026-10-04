@@ -95,6 +95,9 @@ class PackWriter:
         return True
 
     def close(self):
+        if self.docs == 0:
+            self.db.close(); os.remove(self.path)
+            raise SystemExit('pack is empty - refusing to publish it')
         self.meta.update({'docs': str(self.docs), 'chunks': str(self.chunks),
                           'built': time.strftime('%Y-%m-%d'), 'format': '1'})
         self.db.executemany('INSERT INTO meta VALUES(?, ?)', [(k, str(v)) for k, v in self.meta.items()])

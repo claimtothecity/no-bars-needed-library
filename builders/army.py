@@ -92,40 +92,65 @@ def paragraphs(lines):
     return out
 
 
+PAGE_RE = re.compile(r'^[0-9A-Z]{1,2}-\d+$')
+VERB_RE = re.compile(r'^(discusses|covers|focuses|provides|describes|explains|contains|presents)\b', re.I)
+
+
+def _title_like(t):
+    return bool(t) and len(t) < 70 and not t.endswith('.') and not PAGE_RE.match(t) and not VERB_RE.match(t)
+
+
 def split_parts(text):
-    """Split a manual into (part_label, lines) by 'Chapter N' / 'Appendix X' headings.
-    The heading title is the rest of the line or the next non-empty line."""
+    """Split a manual into (label, lines) by 'Chapter N' / 'Appendix X' headings.
+    Running page headers (same chapter again) are dropped; table-of-contents and summary
+    mentions are merged by chapter, keeping the longest body and the best-looking title."""
     lines = text.splitlines()
-    parts, label, cur = [], 'Front matter', []
+    parts = []  # [key, title, lines]
+    key, cur = ('front', ''), []
+    titles = {}
     i = 0
     while i < len(lines):
         s = lines[i].strip()
         m = HEAD_RE.match(s)
         if m and len(s) < 80:
-            title = m.group(3).strip()
+            k = (m.group(1).lower(), m.group(2).upper())
+            title = re.sub(r'\s*\.{2,}.*$|\s+[0-9A-Z]{1,2}-\d+$', '', m.group(3).strip()).strip()
+            # look at the next non-empty line: a title or a page number?
             j = i + 1
-            while not title and j < len(lines) and j < i + 6:
-                if lines[j].strip():
-                    title = lines[j].strip(); i = j
+            while j < len(lines) and not lines[j].strip() and j < i + 4:
                 j += 1
-            parts.append((label, cur))
-            title = re.sub(r'\s*\.{2,}.*$|\s+[0-9A-Z]-\d+$', '', title)
-            label = f'{m.group(1).title()} {m.group(2).upper()}: {title.title()}'.rstrip(': ')
-            cur = []
+            nxt = lines[j].strip() if j < len(lines) else ''
+            if k == key:  # running header inside the same chapter
+                if PAGE_RE.match(nxt):
+                    i = j
+                i += 1
+                continue
+            if not title and (_title_like(nxt) or PAGE_RE.match(nxt)):
+                title = '' if PAGE_RE.match(nxt) else nxt
+                i = j
+            parts.append((key, cur))
+            key, cur = k, []
+            if _title_like(title):
+                titles.setdefault(k, []).append(title)
         else:
             cur.append(lines[i])
         i += 1
-    parts.append((label, cur))
-    # Table-of-contents entries also look like headings; keep the longest body per label
-    best = {}
-    for lab, body in parts:
-        if lab not in best or len(body) > len(best[lab]):
-            best[lab] = body
-    order = []
-    for lab, _ in parts:
-        if lab not in order:
-            order.append(lab)
-    return [(lab, best[lab]) for lab in order]
+    parts.append((key, cur))
+    best, order = {}, []
+    for k, body in parts:
+        if k not in best or len(body) > len(best[k]):
+            best[k] = body
+        if k not in order:
+            order.append(k)
+    out = []
+    for k in order:
+        if k[0] == 'front':
+            label = 'Front matter'
+        else:
+            t = titles.get(k, [''])[0]
+            label = f'{k[0].title()} {k[1]}' + (f': {t.title()}' if t else '')
+        out.append((label, best[k]))
+    return out
 
 
 def plant_entries(paras):
