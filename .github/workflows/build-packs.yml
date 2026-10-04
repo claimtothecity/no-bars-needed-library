@@ -90,6 +90,8 @@ jobs:
           entries = []
           for f in glob.glob('*.json'):
               e = json.load(open(f))
+              if e.get('bytes', 0) < 100_000:  # leftover from a failed/empty build
+                  continue
               e['url'] = f'https://github.com/{repo}/releases/download/{tag}/{e["file"]}'
               entries.append(e)
           entries.sort(key=lambda e: order.index(e['id']) if e['id'] in order else 99)
