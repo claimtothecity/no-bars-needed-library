@@ -104,7 +104,8 @@ VERB_RE = re.compile(r'^(discusses|covers|focuses|provides|describes|explains|co
 
 
 def _title_like(t):
-    return bool(t) and len(t) < 70 and not t.endswith('.') and not PAGE_RE.match(t) and not VERB_RE.match(t)
+    return (bool(t) and len(t) < 70 and not t.endswith('.') and not PAGE_RE.match(t) and not VERB_RE.match(t)
+            and not HEAD_RE.match(t) and t.lower() not in ('page', 'contents'))
 
 
 def split_parts(text):
