@@ -24,7 +24,13 @@ SKIP_SECTIONS = {'references', 'external links', 'see also', 'further reading', 
 DROP_SELECTORS = ['table', 'figure', 'style', 'script', 'sup', '.reference', '.references', '.reflist',
                   '.mw-references-wrap', '.navbox', '.infobox', '.thumb', '.hatnote', '.mw-editsection',
                   '.metadata', '.noprint', '.ambox', '.gallery', 'math', '.mwe-math-element', 'img',
-                  '.portal', '.sistersitebox', '.shortdescription', '.mw-empty-elt']
+                  '.portal', '.sistersitebox', '.shortdescription', '.mw-empty-elt', '#catlinks', '.catlinks',
+                  '.mw-hidden-catlinks', 'footer', '.printfooter', 'nav', '#mw-navigation', '.authority-control',
+                  '.side-box', '.mbox-small', '.plainlinks.metadata']
+# maintenance/category lines that sometimes survive as list items
+MAINT_RE = re.compile(r'^(All |Articles |Pages |Use (mdy|dmy|American|British|Australian|Canadian|Indian)|CS1 |Webarchive|'
+                      r'Short description|Wikipedia |Commons category|Good articles|Featured articles|Harv and Sfn|'
+                      r'Official website|Coordinates on Wikidata|EngvarB|Infobox |Template:|Category:)')
 
 
 def list_zims():
@@ -75,6 +81,8 @@ def html_to_sections(html):
         text = clean_ws(el.get_text(' '))
         text = re.sub(r'\s+([,.;:)])', r'\1', text)
         if len(text) < 25 and el.name != 'p':
+            continue
+        if MAINT_RE.match(text):
             continue
         if el.name == 'li':
             text = '• ' + text

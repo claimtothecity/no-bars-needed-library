@@ -17,12 +17,12 @@ UA = {'User-Agent': 'NoBarsNeededLibraryBuilder/1.0 (https://github.com/claimtot
 SOURCES = {
     'atp': {
         'label': 'ATP 3-50.21 Survival (2018)',
-        'txt': 'https://archive.org/download/survival-atp-3-50-21/Survival%20(ATP%203-50-21)_djvu.txt',
+        'ia': 'survival-atp-3-50-21',
         'url': 'https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1005316',
     },
     'fm': {
         'label': 'FM 3-05.70 Survival (2002)',
-        'txt': 'https://archive.org/download/fm-3-05.70-survival-2002/FM%203-05.70%20Survival%202002_djvu.txt',
+        'ia': 'fm-3-05.70-survival-2002',
         'url': 'https://archive.org/details/fm-3-05.70-survival-2002',
     },
     'tc': {
@@ -43,8 +43,15 @@ NOISE_RE = re.compile(r'^(\d+(-\d+)?|[ivxlc]+|[A-Z]-\d+|ATP 3-50\.21.*|FM 3-05\.
 
 
 def fetch_text(src, work):
-    if 'txt' in src:
-        r = requests.get(src['txt'], headers=UA, timeout=120)
+    if 'ia' in src:  # Internet Archive item: find its OCR text file
+        import urllib.parse
+        files = requests.get(f'https://archive.org/metadata/{src["ia"]}/files', headers=UA, timeout=120).json()['result']
+        names = [f['name'] for f in files if f['name'].endswith('_djvu.txt')]
+        if not names:
+            print('no _djvu.txt in', src['ia'], [f['name'] for f in files]); return None
+        url = f'https://archive.org/download/{src["ia"]}/{urllib.parse.quote(names[0])}'
+        print('text:', url)
+        r = requests.get(url, headers=UA, timeout=300)
         r.raise_for_status()
         return r.text
     urls = list(src['pdf'])
