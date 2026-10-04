@@ -122,6 +122,8 @@ def split_parts(text):
         if m and len(s) < 80:
             k = (m.group(1).lower(), m.group(2).upper())
             title = re.sub(r'\s*\.{2,}.*$|\s+[0-9A-Z]{1,2}-\d+$', '', m.group(3).strip()).strip()
+            if HEAD_RE.match(title) or title.lower() in ('page', 'contents'):
+                title = ''  # two-column table of contents ("Chapter 4  Chapter 5")
             # look at the next non-empty line: a title or a page number?
             j = i + 1
             while j < len(lines) and not lines[j].strip() and j < i + 4:
@@ -166,20 +168,14 @@ def plant_entries(paras):
     idx = [k for k, p in enumerate(paras) if p.lower().startswith('description:')]
     if len(idx) < 5:
         return [('', paras)]
-    entries = []
-    starts = []
-    for k in idx:
-        st = max(0, k - 2)
-        starts.append(st)
+    # the plant name ("Cattail Typha latifolia") is the short paragraph right before "Description:"
+    starts = [k - 1 if k > 0 and len(paras[k - 1]) < 90 and not paras[k - 1].endswith('.') else k for k in idx]
     starts.append(len(paras))
-    if starts[0] > 0:
-        entries.append(('', paras[:starts[0]]))
+    entries = [('', paras[:starts[0]])] if starts[0] > 0 else []
     for a, b in zip(starts, starts[1:]):
         block = paras[a:b]
-        head = [p for p in block[:2] if not p.lower().startswith('description:') and len(p) < 120]
-        title = ' — '.join(head) if head else ''
-        body = [p for p in block if p not in head]
-        entries.append((title, (head[:1] + body) if head else body))
+        title = block[0] if not block[0].lower().startswith('description:') else ''
+        entries.append((title, block))
     return entries
 
 
@@ -220,7 +216,7 @@ def build(pack, out, work):
             keep = True
             if pack == 'wildplants':
                 low = label.lower()
-                keep = ('plant' in low) or low.startswith(('appendix b', 'appendix c'))
+                keep = bool(re.match(r'(chapter (9|10)|appendix [bc])\b', low))
             elif label == 'Front matter':
                 keep = False
             report.append(f'   {"KEEP" if keep else "skip"} {label} ({n} chars)')
@@ -229,7 +225,8 @@ def build(pack, out, work):
             title = f'{src["label"].split(" (")[0]} — {label}'
             if pack == 'wildplants' and label.lower().startswith(('appendix b', 'appendix c')):
                 for entry_title, entry_paras in plant_entries(paras):
-                    w.add(f'{title}: {entry_title}' if entry_title else title, src['url'], [('', entry_paras)])
+                    short = f'{src["label"].split(" (")[0]} {label.split(":")[0]}'
+                    w.add(f'{entry_title} — {short}' if entry_title else title, src['url'], [('', entry_paras)])
             else:
                 w.add(title, src['url'], [('', paras)])
     if w.docs == 0:
