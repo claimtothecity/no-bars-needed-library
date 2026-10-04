@@ -1,0 +1,99 @@
+name: Build library packs
+
+on:
+  workflow_dispatch:
+    inputs:
+      packs:
+        description: 'Packs to build (comma list of ids, or "all")'
+        default: all
+
+permissions:
+  contents: write
+
+concurrency:
+  group: packs
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  TAG: packs
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make sure the "packs" release exists
+        run: |
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --title "Library packs" \
+              --notes "Offline reference packs for No Bars Needed AI. See README for sources and licenses."
+      - id: m
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json, os
+          packs = json.load(open('packs.json'))
+          want = os.environ.get('WANT', 'all').strip()
+          if want and want != 'all':
+              ids = {w.strip() for w in want.split(',')}
+              packs = [p for p in packs if p['id'] in ids]
+          print('matrix=' + json.dumps({'include': packs}))
+          EOF
+        env:
+          WANT: ${{ inputs.packs }}
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    name: build ${{ matrix.id }}
+    steps:
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          pip install -q libzim beautifulsoup4 lxml requests
+          python -c "import sqlite3; sqlite3.connect(':memory:').execute('create virtual table t using fts5(a)'); print('FTS5 ok')"
+      - name: Build ${{ matrix.id }}
+        run: ${{ matrix.cmd }}
+      - name: Upload to the release
+        if: always()
+        run: |
+          ls -la out || true
+          [ -d out ] && [ -n "$(ls out)" ] && gh release upload "$TAG" out/* --clobber -R "$GITHUB_REPOSITORY" || echo "nothing to upload"
+
+  catalog:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild catalog.json from the uploaded packs
+        run: |
+          mkdir -p meta && cd meta
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*.json' --clobber || true
+          rm -f catalog.json
+          python3 - <<'EOF'
+          import glob, json, os
+          repo = os.environ['GITHUB_REPOSITORY']; tag = os.environ['TAG']
+          order = [p['id'] for p in json.load(open('../packs.json'))]
+          entries = []
+          for f in glob.glob('*.json'):
+              e = json.load(open(f))
+              e['url'] = f'https://github.com/{repo}/releases/download/{tag}/{e["file"]}'
+              entries.append(e)
+          entries.sort(key=lambda e: order.index(e['id']) if e['id'] in order else 99)
+          json.dump({'format': 1, 'packs': entries}, open('catalog.json', 'w'), indent=2)
+          print(open('catalog.json').read())
+          EOF
+          gh release upload "$TAG" catalog.json --clobber -R "$GITHUB_REPOSITORY"

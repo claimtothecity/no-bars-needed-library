@@ -1,0 +1,30 @@
+[
+  {
+    "id": "wikimed",
+    "cmd": "python builders/zim.py --id wikimed --flavours medicine_nopic --topic medical --name 'WikiMed medical encyclopedia' --description \"Wikipedia's medicine articles: diseases, symptoms, drugs, anatomy, procedures and first aid. Text only.\" --queries 'migraine aura;anaphylaxis treatment;heat stroke;ankle sprain'"
+  },
+  {
+    "id": "wiki-essentials",
+    "cmd": "python builders/zim.py --id wiki-essentials --flavours 'top_mini|top_nopic' --topic general --name 'Wikipedia essentials' --description \"The opening section of Wikipedia's most-read articles: people, places, history, science and culture.\" --queries 'Abraham Lincoln;photosynthesis;Mount Everest;World War II'"
+  },
+  {
+    "id": "wiki-science",
+    "cmd": "python builders/zim.py --id wiki-science --flavours 'physics_nopic,chemistry_nopic,molcell_nopic,astronomy_nopic,mathematics_nopic,earth_sciences_nopic|geology_nopic' --topic science --name 'Wikipedia science' --description 'Wikipedia articles on physics, chemistry, biology, astronomy, earth science and mathematics. Text only.' --queries 'speed of light;periodic table;mitochondria;black hole'"
+  },
+  {
+    "id": "army-survival",
+    "cmd": "python builders/army.py --pack survival"
+  },
+  {
+    "id": "usda-plants",
+    "cmd": "python builders/usda.py"
+  },
+  {
+    "id": "army-wild-plants",
+    "cmd": "python builders/army.py --pack wildplants"
+  },
+  {
+    "id": "wiki-plants-fungi",
+    "cmd": "python builders/wiki_taxa.py"
+  }
+]
