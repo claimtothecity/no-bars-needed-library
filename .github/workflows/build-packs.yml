@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.m.outputs.matrix }}
+      count: ${{ steps.m.outputs.count }}
     steps:
       - uses: actions/checkout@v4
       - name: Make sure the "packs" release exists
@@ -40,13 +41,14 @@ jobs:
               ids = {w.strip() for w in want.split(',')}
               packs = [p for p in packs if p['id'] in ids]
           print('matrix=' + json.dumps({'include': packs}))
+          print(f'count={len(packs)}')
           EOF
         env:
           WANT: ${{ inputs.packs }}
 
   build:
     needs: plan
-    if: needs.plan.outputs.matrix != '{"include": []}'
+    if: needs.plan.outputs.count != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
