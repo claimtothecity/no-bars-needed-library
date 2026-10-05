@@ -33,6 +33,15 @@ NOT_MEDICINE = re.compile(r'\b(spf|sunscreen|sunblock|antiperspirant|deodorant|h
                           r'soap|body wash|cleanser|wipes?|mouthwash|perfume|cologne)\b', re.I)
 
 
+SUNSCREEN_ACTIVES = {'avobenzone', 'octinoxate', 'octocrylene', 'homosalate', 'oxybenzone', 'octisalate', 'ensulizole',
+                     'titanium dioxide', 'zinc oxide', 'octyl methoxycinnamate', 'ecamsule', 'meradimate'}
+
+
+def only_sunscreen(gen):
+    parts = [p.strip() for p in re.split(r',| and ', gen) if p.strip()]
+    return bool(parts) and all(any(a in p for a in SUNSCREEN_ACTIVES) for p in parts) and len(parts) >= 2
+
+
 def homeopathic(r):
     blob = ' '.join(str(r.get(k, [''])[0]) for k in ('active_ingredient', 'purpose', 'indications_and_usage', 'description'))
     return 'HPUS' in blob or 'homeopathic' in blob.lower()
@@ -70,7 +79,7 @@ def main(out, limit_parts):
                         continue
                     if ptype == 'HUMAN OTC DRUG':
                         names = ' '.join([gen] + (o.get('brand_name') or []))
-                        if NOT_MEDICINE.search(names) or homeopathic(r) or gen.count(',') >= 4:
+                        if NOT_MEDICINE.search(names) or homeopathic(r) or only_sunscreen(gen) or gen.count(',') >= 4:
                             continue
                     for b in o.get('brand_name') or []:
                         bs = brands.setdefault(gen, [])
