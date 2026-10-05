@@ -14,10 +14,24 @@ from pack import PackWriter, write_manifest, sample_report
 
 UA = {'User-Agent': 'NoBarsNeededLibraryBuilder/1.0 (https://github.com/claimtothecity/no-bars-needed-library; ClaimToTheCity@gmail.com)'}
 API = 'https://en.wikipedia.org/w/api.php'
-SPARQL = """
+PREFIXES = """
 PREFIX wd: <http://www.wikidata.org/entity/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+"""
+# Broad: taxa with an English common name OR widely covered (10+ Wikipedia language editions)
+SPARQL_BROAD = PREFIXES + """
+SELECT DISTINCT ?article WHERE {
+  VALUES ?root { wd:Q756 wd:Q764 }
+  ?item wdt:P171+ ?root .
+  ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> .
+  ?item wikibase:sitelinks ?links .
+  OPTIONAL { ?item wdt:P1843 ?common . FILTER(LANG(?common) = "en") }
+  FILTER(BOUND(?common) || ?links >= 10)
+}
+"""
+SPARQL = PREFIXES + """
 SELECT DISTINCT ?article WHERE {
   VALUES ?root { wd:Q756 wd:Q764 }
   ?item wdt:P171+ ?root .
@@ -25,6 +39,9 @@ SELECT DISTINCT ?article WHERE {
   ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> .
 }
 """
+MUST_HAVE = ['Amanita phalloides', 'Morchella', 'Typha latifolia', 'Taraxacum officinale', 'Urtica dioica',
+             'Toxicodendron radicans', 'Cicuta maculata', 'Conium maculatum', 'Chanterelle', 'Amanita muscaria',
+             'Quercus', 'Vaccinium', 'Rubus', 'Sambucus', 'Allium tricoccum', 'Plantago major']
 FULLTEXT_WORDS = ('edible', 'toxic', 'poison', 'medicinal', 'eaten', 'food', 'cultivated', 'invasive', 'foraging')
 SKIP_HEADINGS = ('references', 'external links', 'see also', 'further reading', 'notes', 'bibliography',
                  'sources', 'gallery', 'citations')
@@ -33,18 +50,19 @@ session = requests.Session(); session.headers.update(UA)
 
 
 def titles_from_wikidata():
-    endpoints = [('https://qlever.cs.uni-freiburg.de/api/wikidata', {'Accept': 'application/sparql-results+json'}),
-                 ('https://query.wikidata.org/sparql', {'Accept': 'application/sparql-results+json'})]
-    for url, hdr in endpoints:
+    q = 'https://qlever.cs.uni-freiburg.de/api/wikidata'
+    hdr = {'Accept': 'application/sparql-results+json'}
+    endpoints = [(q, SPARQL_BROAD), (q, SPARQL), ('https://query.wikidata.org/sparql', SPARQL)]
+    for url, query in endpoints:
         try:
-            r = session.post(url, data={'query': SPARQL}, headers=hdr, timeout=900)
+            r = session.post(url, data={'query': query}, headers=hdr, timeout=900)
             r.raise_for_status()
             rows = r.json()['results']['bindings']
             titles = sorted({urllib.parse.unquote(b['article']['value'].rsplit('/wiki/', 1)[1]).replace('_', ' ')
                              for b in rows})
             print(f'{url}: {len(titles)} articles', flush=True)
             if titles:
-                return titles, url
+                return sorted(set(titles) | set(MUST_HAVE)), url + (' (broad)' if query is SPARQL_BROAD else '')
         except Exception as ex:
             print('sparql failed', url, ex, flush=True)
     sys.exit('no titles from Wikidata')
@@ -137,7 +155,8 @@ def main(out, limit):
         w.add(t, url, secs)
     w.close()
     report = [f'titles {len(titles)} from {endpoint}; intros {len(got)}; full {len(full)}']
-    report += sample_report(out_path, ['death cap', 'cattail edible', 'poison ivy rash', 'morel'])
+    report += [f'must-have {t}: {"ok" if t in got else "MISSING"}' for t in MUST_HAVE]
+    report += sample_report(out_path, ['death cap', 'cattail edible', 'poison ivy rash', 'morel', 'elderberry', 'stinging nettle'])
     write_manifest('wiki-plants-fungi', out_path, meta, report)
 
 
