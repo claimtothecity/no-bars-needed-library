@@ -27,6 +27,17 @@ SECTIONS = [  # (field, heading, max chars)
 ]
 
 
+# Over-the-counter products that aren't really medicines people ask about (cosmetics, sunscreens, sanitizers)
+NOT_MEDICINE = re.compile(r'\b(spf|sunscreen|sunblock|antiperspirant|deodorant|hand sanitizer|sanitiz|toothpaste|lip balm|'
+                          r'lipstick|foundation|concealer|bb cream|cc cream|primer|makeup|moisturi[sz]er|shampoo|conditioner|'
+                          r'soap|body wash|cleanser|wipes?|mouthwash|perfume|cologne)\b', re.I)
+
+
+def homeopathic(r):
+    blob = ' '.join(str(r.get(k, [''])[0]) for k in ('active_ingredient', 'purpose', 'indications_and_usage', 'description'))
+    return 'HPUS' in blob or 'homeopathic' in blob.lower()
+
+
 def trim(text, n):
     t = clean_ws(text)
     t = re.sub(r'^\d+(\.\d+)*\s+[A-Z][A-Z &/,-]{3,}\s+', '', t)  # drop leading "5 WARNINGS AND PRECAUTIONS"
@@ -57,6 +68,10 @@ def main(out, limit_parts):
                     gen = (o.get('generic_name') or [''])[0].strip().lower()
                     if not gen or len(gen) > 120:
                         continue
+                    if ptype == 'HUMAN OTC DRUG':
+                        names = ' '.join([gen] + (o.get('brand_name') or []))
+                        if NOT_MEDICINE.search(names) or homeopathic(r) or gen.count(',') >= 4:
+                            continue
                     for b in o.get('brand_name') or []:
                         bs = brands.setdefault(gen, [])
                         b = b.strip().title()
