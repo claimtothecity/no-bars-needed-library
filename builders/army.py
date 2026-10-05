@@ -105,7 +105,7 @@ def paragraphs(lines):
             if buf:
                 out.append(buf); buf = ''
             continue
-        if NOISE_RE.match(s):
+        if NOISE_RE.match(s) or '.....' in s:  # page furniture and table-of-contents leader lines
             continue
         if buf.endswith('-') and not buf.endswith(' -'):
             buf = buf[:-1] + s
@@ -121,6 +121,7 @@ VERB_RE = re.compile(r'^(discusses|covers|focuses|provides|describes|explains|co
 
 
 def _title_like(t):
+    t = re.sub(r'\s*\.{2,}.*$', '', t).strip()
     return (bool(t) and len(t) < 70 and not t.endswith('.') and not PAGE_RE.match(t) and not VERB_RE.match(t)
             and not HEAD_RE.match(t) and t.lower() not in ('page', 'contents'))
 
@@ -134,8 +135,14 @@ def split_parts(text):
     key, cur = ('front', ''), []
     titles = {}
     i = 0
+    para_re = re.compile(r'^(\d{1,2})-\d{1,3}\.\s')
     while i < len(lines):
         s = lines[i].strip()
+        # numbered paragraphs ("10-3. ...") reveal a new chapter even when OCR lost the "Chapter 10" heading
+        pm = para_re.match(s)
+        if pm and key[0] == 'chapter' and key[1].isdigit() and int(pm.group(1)) == int(key[1]) + 1:
+            parts.append((key, cur))
+            key, cur = ('chapter', pm.group(1)), []
         m = HEAD_RE.match(s)
         if m and len(s) < 80:
             k = (m.group(1).lower(), m.group(2).upper())
@@ -153,7 +160,7 @@ def split_parts(text):
                 i += 1
                 continue
             if not title and (_title_like(nxt) or PAGE_RE.match(nxt)):
-                title = '' if PAGE_RE.match(nxt) else nxt
+                title = '' if PAGE_RE.match(nxt) else re.sub(r'\s*\.{2,}.*$|\s+[0-9A-Z]{1,2}-\d+$', '', nxt).strip()
                 i = j
             parts.append((key, cur))
             key, cur = k, []
@@ -233,7 +240,7 @@ def build(pack, out, work):
         if not text:
             report.append(f'!! {src["label"]}: could not download, skipped')
             continue
-        parts = split_parts(text)
+        parts = [('Front matter', text.splitlines())] if src.get('whole') else split_parts(text)
         report.append(f'{src["label"]}: {len(text)} chars, {len(parts)} parts')
         for label, lines in parts:
             paras = paragraphs(lines)
