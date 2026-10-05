@@ -5,7 +5,8 @@
   },
   {
     "id": "wiki-essentials",
-    "cmd": "python builders/zim.py --id wiki-essentials --flavours 'top_mini|top_nopic' --topic general --name 'Wikipedia essentials' --description \"The opening section of Wikipedia's most-read articles: people, places, history, science and culture.\" --queries 'Abraham Lincoln;photosynthesis;Mount Everest;World War II'"
+    "cmd": "python builders/zim.py --id wiki-essentials --flavours 'top_mini|top_nopic' --topic general --name 'Wikipedia essentials' --description \"The opening section of Wikipedia's most-read articles: people, places, history, science and culture.\" --queries 'Abraham Lincoln;photosynthesis;Mount Everest;World War II'",
+    "description": "Only the first section (the summary) of each of Wikipedia's 50,000 most-read articles: people, places, history, science and culture. For full articles, add WikiMed or Wikipedia science."
   },
   {
     "id": "wiki-science",

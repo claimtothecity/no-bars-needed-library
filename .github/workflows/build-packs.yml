@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       packs:
-        description: 'Packs to build (comma list of ids, or "all")'
+        description: 'Packs to build (comma list of ids, "all", or "none" to only refresh catalog.json)'
         default: all
 
 permissions:
@@ -46,6 +46,7 @@ jobs:
 
   build:
     needs: plan
+    if: needs.plan.outputs.matrix != '{"include": []}'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
@@ -86,13 +87,17 @@ jobs:
           python3 - <<'EOF'
           import glob, json, os
           repo = os.environ['GITHUB_REPOSITORY']; tag = os.environ['TAG']
-          order = [p['id'] for p in json.load(open('../packs.json'))]
+          defs = json.load(open('../packs.json'))
+          order = [p['id'] for p in defs]
+          overrides = {p['id']: p.get('description') for p in defs}
           entries = []
           for f in glob.glob('*.json'):
               e = json.load(open(f))
               if e.get('bytes', 0) < 100_000:  # leftover from a failed/empty build
                   continue
               e['url'] = f'https://github.com/{repo}/releases/download/{tag}/{e["file"]}'
+              if overrides.get(e['id']):  # wording fixes without rebuilding the pack
+                  e['description'] = overrides[e['id']]
               entries.append(e)
           entries.sort(key=lambda e: order.index(e['id']) if e['id'] in order else 99)
           json.dump({'format': 1, 'packs': entries}, open('catalog.json', 'w'), indent=2)
