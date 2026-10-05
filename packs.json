@@ -10,7 +10,8 @@
   },
   {
     "id": "wiki-science",
-    "cmd": "python builders/zim.py --id wiki-science --flavours 'physics_nopic,chemistry_nopic,molcell_nopic,astronomy_nopic,mathematics_nopic,earth_sciences_nopic|geology_nopic' --topic science --name 'Wikipedia science' --description 'Wikipedia articles on physics, chemistry, biology, astronomy, earth science and mathematics. Text only.' --queries 'speed of light;periodic table;mitochondria;black hole'"
+    "cmd": "python builders/zim.py --id wiki-science --flavours 'physics_nopic,chemistry_nopic,molcell_nopic,astronomy_nopic,mathematics_nopic,earth_sciences_nopic|geology_nopic' --topic science --name 'Wikipedia science' --description 'Wikipedia articles on physics, chemistry, biology, astronomy, earth science and mathematics. Text only.' --queries 'speed of light;periodic table;mitochondria;black hole'",
+    "description": "Full Wikipedia articles on physics, chemistry, molecular and cell biology, astronomy and mathematics. Text only."
   },
   {
     "id": "army-survival",
