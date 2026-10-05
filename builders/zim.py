@@ -29,7 +29,7 @@ DROP_SELECTORS = ['table', 'figure', 'style', 'script', 'sup', '.reference', '.r
                   '.mw-hidden-catlinks', 'footer', '.printfooter', 'nav', '#mw-navigation', '.authority-control',
                   '.side-box', '.mbox-small', '.plainlinks.metadata']
 # maintenance/category lines that sometimes survive as list items
-MAINT_RE = re.compile(r'^(All |Articles |Pages |Use (mdy|dmy|American|British|Australian|Canadian|Indian)|CS1 |Webarchive|'
+MAINT_RE = re.compile(r'^(Cookbook \| |[A-Z][\w ]+ \| [A-Z][\w ]+ \| |All |Articles |Pages |Use (mdy|dmy|American|British|Australian|Canadian|Indian)|CS1 |Webarchive|'
                       r'Short description|Wikipedia |Commons category|Good articles|Featured articles|Harv and Sfn|'
                       r'Official website|Coordinates on Wikidata|EngvarB|Infobox |Template:|Category:)')
 
@@ -192,7 +192,8 @@ def main():
                     continue
                 seen.add(title)
                 url = args.site + urllib.parse.quote(path)
-                w.add(title, url, sections)
+                shown = title[len(args.title_prefix):].strip() if args.title_prefix and title.startswith(args.title_prefix) else title
+                w.add(shown, url, sections)
         os.remove(zim_path)
     w.close()
     report += sample_report(out_path, args.queries.split(';'))
