@@ -19,13 +19,20 @@ Packs are built by GitHub Actions (`Build library packs` workflow) and published
 | USDA PLANTS checklist | USDA NRCS PLANTS Database complete checklist | Public domain (U.S. Government work) |
 | Wild edible & poisonous plants | U.S. Army FM 3-05.70 *Survival* (2002): plant chapters, Appendices B and C | Public domain (U.S. Government work) |
 | Wikipedia plants & fungi | Wikipedia articles on taxa under Plantae/Fungi with English common names (list from Wikidata, CC0) | CC BY-SA 4.0, Wikipedia contributors |
+| MedlinePlus health topics | U.S. National Library of Medicine health topics XML | Public domain (U.S. Government work) |
+| FDA drug labels | openFDA drug label bulk download (SPL) | Public domain (U.S. Government work) |
+| Navigation & emergency preparedness | Army TC 3-25.26 Map Reading & Land Navigation; FEMA *Are You Ready?* | Public domain (U.S. Government work) |
+| Wikipedia history / geography | Kiwix `wikipedia_en_history_nopic`, `wikipedia_en_geography_nopic` | CC BY-SA 4.0, Wikipedia contributors |
+| Wikivoyage travel guide | Kiwix `wikivoyage_en_all` | CC BY-SA 4.0, Wikivoyage contributors |
+| Appropedia (off-grid how-to) | Kiwix `appropedia_en_all` | CC BY-SA 4.0, Appropedia contributors |
+| Wikibooks Cookbook | Kiwix `wikibooks_en_all` (Cookbook: pages only) | CC BY-SA 4.0, Wikibooks contributors |
 
 Wikipedia text is reformatted into plain-text passages (tables, images and references removed).
 Under CC BY-SA, these packs are shared under the same license; each pack carries its credit line
 in its `meta` table, and the app shows it on the Library screen.
 
-Not included on purpose: OpenStax (CC BY-NC-SA, non-commercial only) and MedlinePlus (mixed
-copyright).
+Not included on purpose: OpenStax, wikiHow and iFixit (non-commercial licenses), StatPearls (NC-ND), MedlinePlus
+drug and encyclopedia pages (licensed from third parties; only NLM-written health topics are used).
 
 ## Pack format (version 1)
 

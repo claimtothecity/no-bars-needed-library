@@ -15,7 +15,8 @@ from libzim.reader import Archive
 sys.path.insert(0, os.path.dirname(__file__))
 from pack import PackWriter, write_manifest, sample_report, clean_ws
 
-KIWIX = 'https://download.kiwix.org/zim/wikipedia/'
+KIWIX_ROOT = 'https://download.kiwix.org/zim/'
+KIWIX = KIWIX_ROOT + 'wikipedia/'  # changed by --dir
 UA = {'User-Agent': 'NoBarsNeededLibraryBuilder/1.0 (https://github.com/claimtothecity/no-bars-needed-library)'}
 
 SKIP_SECTIONS = {'references', 'external links', 'see also', 'further reading', 'notes', 'bibliography',
@@ -35,11 +36,15 @@ MAINT_RE = re.compile(r'^(All |Articles |Pages |Use (mdy|dmy|American|British|Au
 
 def list_zims():
     html = requests.get(KIWIX, headers=UA, timeout=60).text
-    return sorted(set(re.findall(r'href="(wikipedia_en_[a-z0-9_]+?_\d{4}-\d{2}\.zim)"', html)))
+    return sorted(set(re.findall(r'href="([a-z0-9_\-]+?_\d{4}-\d{2}\.zim)"', html)))
+
+
+PREFIX = 'wikipedia_en_'  # changed by --prefix
+TITLE_PREFIX = ''  # changed by --title-prefix
 
 
 def newest(all_files, flavour):
-    pat = re.compile(rf'^wikipedia_en_{re.escape(flavour)}_(\d{{4}}-\d{{2}})\.zim$')
+    pat = re.compile(rf'^{re.escape(PREFIX)}{re.escape(flavour)}_(\d{{4}}-\d{{2}})\.zim$')
     hits = sorted((m.group(1), f) for f in all_files if (m := pat.match(f)))
     return hits[-1][1] if hits else None
 
@@ -110,6 +115,8 @@ def iter_articles(zim_path):
             path = path[2:]
         if path.startswith(('-/', 'I/', 'M/', 'X/', 'W/')) or path in ('index', 'mainPage', 'Main_Page'):
             continue
+        if TITLE_PREFIX and not (e.title.startswith(TITLE_PREFIX) or path.startswith(TITLE_PREFIX)):
+            continue  # skip before the (slow) HTML parsing
         yield e.title, path, bytes(item.content).decode('utf-8', 'replace')
 
 
@@ -131,12 +138,23 @@ def main():
     ap.add_argument('--queries', default='headache;fever;fracture')
     ap.add_argument('--out', default='out')
     ap.add_argument('--work', default='work')
+    ap.add_argument('--dir', default='wikipedia', help='Kiwix folder: wikipedia, wikivoyage, wikibooks, other ...')
+    ap.add_argument('--prefix', default='wikipedia_en_', help='file name prefix before the flavour')
+    ap.add_argument('--site', default='https://en.wikipedia.org/wiki/', help='article URL base for sources')
+    ap.add_argument('--credit', default='Text from Wikipedia, the free encyclopedia (Wikipedia contributors), via Kiwix. '
+                    'Licensed CC BY-SA 4.0. Reformatted as plain-text passages.')
+    ap.add_argument('--license', default='CC BY-SA 4.0')
+    ap.add_argument('--title-prefix', default='', help='only keep articles whose title starts with this (e.g. Cookbook:)')
     args = ap.parse_args()
+    global KIWIX, PREFIX, TITLE_PREFIX
+    KIWIX = f'{KIWIX_ROOT}{args.dir}/'
+    PREFIX = args.prefix
+    TITLE_PREFIX = args.title_prefix
     os.makedirs(args.out, exist_ok=True); os.makedirs(args.work, exist_ok=True)
 
     files = list_zims()
-    report = [f'kiwix english wikipedia ZIMs available: {len(files)}']
-    report += [f'  {f}' for f in files if re.search(r'nopic|mini|plant|botan|fung|medic|scien|chem|phys|biol|astro|molcell|math|earth|geo', f)]
+    report = [f'kiwix {args.dir} ZIMs available: {len(files)}']
+    report += [f'  {f}' for f in files if '_en_' in f or not f.startswith(('wikipedia_', 'wiki'))][:200]
     chosen = []
     for fl in args.flavours.split(','):
         f = None
@@ -153,9 +171,8 @@ def main():
     version = max(re.search(r'(\d{4}-\d{2})\.zim$', f).group(1) for f in chosen)
     meta = {'id': args.id, 'name': args.name, 'description': args.description, 'version': version,
             'topic': args.topic,
-            'license': 'CC BY-SA 4.0',
-            'credit': 'Text from Wikipedia, the free encyclopedia (Wikipedia contributors), via Kiwix. '
-                      'Licensed CC BY-SA 4.0. Reformatted as plain-text passages.',
+            'license': args.license,
+            'credit': args.credit,
             'source': ', '.join(chosen)}
     out_path = os.path.join(args.out, f'{args.id}.sqlite')
     w = PackWriter(out_path, meta)
@@ -166,8 +183,10 @@ def main():
             for title, path, sections in pool.imap(_work, iter_articles(zim_path), chunksize=32):
                 if title in seen:
                     continue
+                if args.title_prefix and not (title.startswith(args.title_prefix) or path.startswith(args.title_prefix)):
+                    continue
                 seen.add(title)
-                url = 'https://en.wikipedia.org/wiki/' + urllib.parse.quote(path)
+                url = args.site + urllib.parse.quote(path)
                 w.add(title, url, sections)
         os.remove(zim_path)
     w.close()

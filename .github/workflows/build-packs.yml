@@ -65,7 +65,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
-          pip install -q libzim beautifulsoup4 lxml requests
+          pip install -q libzim beautifulsoup4 lxml requests ijson
           python -c "import sqlite3; sqlite3.connect(':memory:').execute('create virtual table t using fts5(a)'); print('FTS5 ok')"
       - name: Build ${{ matrix.id }}
         run: ${{ matrix.cmd }}

@@ -1,32 +1,77 @@
 [
   {
     "id": "wikimed",
-    "cmd": "python builders/zim.py --id wikimed --flavours medicine_nopic --topic medical --name 'WikiMed medical encyclopedia' --description \"Wikipedia's medicine articles: diseases, symptoms, drugs, anatomy, procedures and first aid. Text only.\" --queries 'migraine aura;anaphylaxis treatment;heat stroke;ankle sprain'"
+    "cmd": "python builders/zim.py --id wikimed --flavours medicine_nopic --topic medical --name 'WikiMed medical encyclopedia' --description \"Wikipedia's medicine articles: diseases, symptoms, drugs, anatomy, procedures and first aid. Text only.\" --queries 'migraine aura;anaphylaxis treatment;heat stroke;ankle sprain'",
+    "description": "Wikipedia's medicine articles (about 71,000): diseases, symptoms, drugs, anatomy and procedures, in full. Overlaps with MedlinePlus (the same conditions in plain language) and FDA drug labels (official drug details)."
+  },
+  {
+    "id": "medlineplus",
+    "cmd": "python builders/medlineplus.py",
+    "description": "About 1,000 plain-language health topics written by the U.S. National Library of Medicine (MedlinePlus): conditions, tests, symptoms and wellness. Small. Overlaps with WikiMed, which covers the same conditions in more technical depth."
+  },
+  {
+    "id": "fda-labels",
+    "cmd": "python builders/fda_labels.py",
+    "description": "Official U.S. drug labels (FDA) for prescription and over-the-counter medicines: uses, dosing, contraindications, warnings, side effects and interactions, one entry per drug. Overlaps with drug articles in WikiMed and with the online FDA lookup when Internet is on (this works offline)."
   },
   {
     "id": "wiki-essentials",
     "cmd": "python builders/zim.py --id wiki-essentials --flavours 'top_mini|top_nopic' --topic general --name 'Wikipedia essentials' --description \"The opening section of Wikipedia's most-read articles: people, places, history, science and culture.\" --queries 'Abraham Lincoln;photosynthesis;Mount Everest;World War II'",
-    "description": "Only the first section (the summary) of each of Wikipedia's 50,000 most-read articles: people, places, history, science and culture. For full articles, add WikiMed or Wikipedia science."
+    "description": "Only the first section (the summary) of each of Wikipedia's 50,000 most-read articles: people, places, history, science and culture. Overlaps with the Wikipedia science, history and geography packs, which have the full articles."
   },
   {
     "id": "wiki-science",
     "cmd": "python builders/zim.py --id wiki-science --flavours 'physics_nopic,chemistry_nopic,molcell_nopic,astronomy_nopic,mathematics_nopic,earth_sciences_nopic|geology_nopic' --topic science --name 'Wikipedia science' --description 'Wikipedia articles on physics, chemistry, biology, astronomy, earth science and mathematics. Text only.' --queries 'speed of light;periodic table;mitochondria;black hole'",
-    "description": "Full Wikipedia articles on physics, chemistry, molecular and cell biology, astronomy and mathematics. Text only."
+    "description": "Full Wikipedia articles on physics, chemistry, molecular and cell biology, astronomy and mathematics. Text only. Overlaps a little with WikiMed (biochemistry and drugs) and with Wikipedia essentials (summaries of famous topics)."
+  },
+  {
+    "id": "wiki-history",
+    "cmd": "python builders/zim.py --id wiki-history --flavours history_nopic --topic general --name 'Wikipedia history' --description 'Full Wikipedia history articles' --queries 'Roman Empire;French Revolution;Civil War'",
+    "description": "Full Wikipedia articles on world history: civilizations, wars, empires, events and historical figures. Text only. Overlaps with Wikipedia essentials (summaries of the most famous ones) and Wikipedia geography (countries' history sections)."
+  },
+  {
+    "id": "wiki-geography",
+    "cmd": "python builders/zim.py --id wiki-geography --flavours geography_nopic --topic general --name 'Wikipedia geography' --description 'Full Wikipedia geography articles' --queries 'Missouri River;Sahara;Japan climate'",
+    "description": "Full Wikipedia articles on countries, regions, cities, rivers, mountains and climate. Text only. Overlaps with Wikipedia essentials (summaries), Wikipedia history, and Wikivoyage (which covers travel rather than facts)."
+  },
+  {
+    "id": "wikivoyage",
+    "cmd": "python builders/zim.py --id wikivoyage --dir wikivoyage --prefix wikivoyage_en_ --flavours 'all_nopic|all_maxi' --site https://en.wikivoyage.org/wiki/ --credit 'Text from Wikivoyage, the free travel guide (Wikivoyage contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic travel --name 'Wikivoyage travel guide' --description 'Wikivoyage travel guide' --queries 'St. Louis;Yellowstone;Tokyo get around'",
+    "description": "The free Wikivoyage travel guide: destinations, getting around, sights, where to stay, local safety and phrasebooks. Little overlap: Wikipedia geography has facts about places, Wikivoyage has practical travel tips."
   },
   {
     "id": "army-survival",
-    "cmd": "python builders/army.py --pack survival"
+    "cmd": "python builders/army.py --pack survival",
+    "description": "U.S. Army survival manual (ATP 3-50.21) and first-aid manual (TC 4-02.1): shelter, water, fire, signaling, survival medicine, bleeding, burns, fractures. Overlaps with Wild edible plants (similar food chapters) and Navigation & preparedness (its navigation chapter is a shorter version)."
   },
   {
-    "id": "usda-plants",
-    "cmd": "python builders/usda.py"
+    "id": "preparedness",
+    "cmd": "python builders/army.py --pack fieldcraft",
+    "description": "U.S. Army map reading & land navigation (TC 3-25.26) and FEMA's Are You Ready? emergency preparedness guide: compass and map use, storms, floods, power outages, emergency supplies. Overlaps a little with Army survival (navigation basics)."
+  },
+  {
+    "id": "appropedia",
+    "cmd": "python builders/zim.py --id appropedia --dir other --prefix appropedia_en_ --flavours 'all_nopic|all_maxi|all' --site https://www.appropedia.org/ --credit 'Text from Appropedia (Appropedia contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic survival --name 'Appropedia (off-grid how-to)' --description 'Appropedia' --queries 'solar cooker;rainwater harvesting;composting toilet'",
+    "description": "Appropedia's practical how-to wiki for off-grid and sustainable living: water filtration, solar power, cooking, shelter, sanitation, farming. Overlaps a little with Army survival and Navigation & preparedness (water, shelter, emergencies)."
   },
   {
     "id": "army-wild-plants",
-    "cmd": "python builders/army.py --pack wildplants"
+    "cmd": "python builders/army.py --pack wildplants",
+    "description": "U.S. Army field manual chapters on finding and testing wild food plants, the universal edibility test, edible and medicinal plants, and poisonous plants. Overlaps with Wikipedia plants & fungi and USDA PLANTS (same species, different detail)."
   },
   {
     "id": "wiki-plants-fungi",
-    "cmd": "python builders/wiki_taxa.py"
+    "cmd": "python builders/wiki_taxa.py",
+    "description": "Wikipedia articles on about 42,000 plants, trees, wildflowers, mushrooms and other fungi; full articles for edible, toxic or medicinal species. Overlaps with Wild edible plants (survival use) and USDA PLANTS (names)."
+  },
+  {
+    "id": "usda-plants",
+    "cmd": "python builders/usda.py",
+    "description": "Names of every plant in the U.S. from the USDA PLANTS Database: common and scientific names, families, older names. Names only, no descriptions; pairs with Wikipedia plants & fungi and Wild edible plants, which describe them."
+  },
+  {
+    "id": "wikibooks-cookbook",
+    "cmd": "python builders/zim.py --id wikibooks-cookbook --dir wikibooks --prefix wikibooks_en_ --flavours 'all_nopic|all_maxi' --title-prefix 'Cookbook:' --site https://en.wikibooks.org/wiki/ --credit 'Text from the Wikibooks Cookbook (Wikibooks contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic food --name 'Wikibooks Cookbook' --description 'Wikibooks Cookbook' --queries 'bread;pancakes;canning;substitute eggs'",
+    "description": "The Wikibooks Cookbook: thousands of recipes plus cooking techniques, ingredients, substitutions and food preservation. No overlap with the other packs."
   }
 ]

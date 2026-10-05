@@ -15,6 +15,18 @@ from pack import PackWriter, write_manifest, sample_report
 UA = {'User-Agent': 'NoBarsNeededLibraryBuilder/1.0 (https://github.com/claimtothecity/no-bars-needed-library)'}
 
 SOURCES = {
+    'nav': {
+        'label': 'TC 3-25.26 Map Reading and Land Navigation',
+        'ia': ['map-reading-and-land-navigation-tc-3-25-26', 'milmanual-fm-3-25.26-map-reading-and-land-navigation',
+               'fm-3-25.26-map-reading-and-land-navigation'],
+        'url': 'https://armypubs.army.mil/',
+    },
+    'fema': {
+        'label': 'FEMA Are You Ready? Citizen Preparedness Guide',
+        'ia': ['FemaEmergencyHandbook-areYouReady'],
+        'url': 'https://www.ready.gov/',
+        'whole': True,  # not organized in chapters; keep the whole guide
+    },
     'atp': {
         'label': 'ATP 3-50.21 Survival (2018)',
         'ia': 'survival-atp-3-50-21',
@@ -43,17 +55,22 @@ NOISE_RE = re.compile(r'^(\d+(-\d+)?|[ivxlc]+|[A-Z]-\d+|ATP 3-50\.21.*|FM 3-05\.
 
 
 def fetch_text(src, work):
-    if 'ia' in src:  # Internet Archive item: find its OCR text file
+    if 'ia' in src:  # Internet Archive item(s): use the first one that has an OCR text file
         import urllib.parse
-        files = requests.get(f'https://archive.org/metadata/{src["ia"]}/files', headers=UA, timeout=120).json()['result']
-        names = [f['name'] for f in files if f['name'].endswith('_djvu.txt')]
-        if not names:
-            print('no _djvu.txt in', src['ia'], [f['name'] for f in files]); return None
-        url = f'https://archive.org/download/{src["ia"]}/{urllib.parse.quote(names[0])}'
-        print('text:', url)
-        r = requests.get(url, headers=UA, timeout=300)
-        r.raise_for_status()
-        return r.text
+        for ident in (src['ia'] if isinstance(src['ia'], list) else [src['ia']]):
+            try:
+                files = requests.get(f'https://archive.org/metadata/{ident}/files', headers=UA, timeout=120).json()['result']
+            except Exception as ex:
+                print('metadata failed', ident, ex); continue
+            names = [f['name'] for f in files if f['name'].endswith('_djvu.txt')]
+            if not names:
+                print('no _djvu.txt in', ident); continue
+            url = f'https://archive.org/download/{ident}/{urllib.parse.quote(names[0])}'
+            print('text:', url)
+            r = requests.get(url, headers=UA, timeout=300)
+            if r.ok and len(r.text) > 5000:
+                return r.text
+        return None
     urls = list(src['pdf'])
     if src.get('commons_title'):
         try:
@@ -192,6 +209,13 @@ def build(pack, out, work):
                 'credit': 'U.S. Department of the Army, ATP 3-50.21 Survival (2018) and TC 4-02.1 First Aid. Public domain.'}
         keys = ['atp', 'tc']
         queries = ['purify water', 'build a fire', 'tourniquet bleeding', 'hypothermia', 'snake bite']
+    elif pack == 'fieldcraft':
+        meta = {**common, 'id': 'preparedness', 'name': 'Navigation & emergency preparedness',
+                'description': '', 'topic': 'survival',
+                'credit': 'U.S. Department of the Army, TC 3-25.26 Map Reading and Land Navigation; FEMA, Are You Ready? '
+                          'An In-depth Guide to Citizen Preparedness. Public domain.'}
+        keys = ['nav', 'fema']
+        queries = ['compass declination', 'pace count', 'tornado shelter', 'emergency water storage', 'power outage']
     else:
         meta = {**common, 'id': 'army-wild-plants', 'name': 'Wild edible & poisonous plants',
                 'description': 'U.S. Army field manual chapters on finding and testing wild food plants, the universal edibility test, '
@@ -219,15 +243,19 @@ def build(pack, out, work):
                 low = label.lower()
                 keep = bool(re.match(r'(chapter (9|10)|appendix [bc])\b', low))
             elif label == 'Front matter':
-                keep = False
+                keep = bool(src.get('whole')) or len(parts) == 1
             report.append(f'   {"KEEP" if keep else "skip"} {label} ({n} chars)')
             if not keep or n < 200:
                 continue
-            title = f'{src["label"].split(" (")[0]} — {label}'
+            title = f'{src["label"].split(" (")[0]} — {label}' if label != 'Front matter' else src['label']
             if pack == 'wildplants' and label.lower().startswith(('appendix b', 'appendix c')):
                 for entry_title, entry_paras in plant_entries(paras):
                     short = f'{src["label"].split(" (")[0]} {label.split(":")[0]}'
                     w.add(f'{entry_title} — {short}' if entry_title else title, src['url'], [('', entry_paras)])
+            elif src.get('whole') or label == 'Front matter':
+                # long unstructured guide: split into ~40-paragraph documents so sources stay specific
+                for i in range(0, len(paras), 40):
+                    w.add(f'{title} (part {i // 40 + 1})', src['url'], [('', paras[i:i + 40])])
             else:
                 w.add(title, src['url'], [('', paras)])
     if w.docs == 0:
@@ -239,7 +267,7 @@ def build(pack, out, work):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('--pack', choices=['survival', 'wildplants'], required=True)
+    ap.add_argument('--pack', choices=['survival', 'wildplants', 'fieldcraft'], required=True)
     ap.add_argument('--out', default='out')
     ap.add_argument('--work', default='work')
     a = ap.parse_args()
