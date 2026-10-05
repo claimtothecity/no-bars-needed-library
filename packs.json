@@ -51,7 +51,7 @@
   },
   {
     "id": "appropedia",
-    "cmd": "python builders/zim.py --id appropedia --dir other --prefix appropedia_en_ --flavours 'all_nopic|all_maxi|all' --site https://www.appropedia.org/ --credit 'Text from Appropedia (Appropedia contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic survival --name 'Appropedia (off-grid how-to)' --description 'Appropedia' --queries 'solar cooker;rainwater harvesting;composting toilet'",
+    "cmd": "python builders/zim.py --id appropedia --dir other --prefix appropedia_en_ --flavours 'all_nopic|all_maxi|all' --site https://www.appropedia.org/ --credit 'Text from Appropedia (Appropedia contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic survival --english-only --name 'Appropedia (off-grid how-to)' --description 'Appropedia' --queries 'solar cooker;rainwater harvesting;composting toilet'",
     "description": "Appropedia's practical how-to wiki for off-grid and sustainable living: water filtration, solar power, cooking, shelter, sanitation, farming. Overlaps a little with Army survival and Navigation & preparedness (water, shelter, emergencies)."
   },
   {

@@ -41,6 +41,7 @@ def list_zims():
 
 PREFIX = 'wikipedia_en_'  # changed by --prefix
 TITLE_PREFIX = ''  # changed by --title-prefix
+SKIP_TRANSLATIONS = False  # --english-only
 
 
 def newest(all_files, flavour):
@@ -115,6 +116,8 @@ def iter_articles(zim_path):
             path = path[2:]
         if path.startswith(('-/', 'I/', 'M/', 'X/', 'W/')) or path in ('index', 'mainPage', 'Main_Page'):
             continue
+        if SKIP_TRANSLATIONS and re.search(r'/[a-z]{2,3}(-[a-z]+)?$', path):
+            continue  # e.g. "Rainwater_harvesting/ja" (translated copies)
         if TITLE_PREFIX and not (e.title.startswith(TITLE_PREFIX) or path.startswith(TITLE_PREFIX)):
             continue  # skip before the (slow) HTML parsing
         yield e.title, path, bytes(item.content).decode('utf-8', 'replace')
@@ -144,9 +147,11 @@ def main():
     ap.add_argument('--credit', default='Text from Wikipedia, the free encyclopedia (Wikipedia contributors), via Kiwix. '
                     'Licensed CC BY-SA 4.0. Reformatted as plain-text passages.')
     ap.add_argument('--license', default='CC BY-SA 4.0')
+    ap.add_argument('--english-only', action='store_true', help='skip translated pages like Page/es')
     ap.add_argument('--title-prefix', default='', help='only keep articles whose title starts with this (e.g. Cookbook:)')
     args = ap.parse_args()
-    global KIWIX, PREFIX, TITLE_PREFIX
+    global KIWIX, PREFIX, TITLE_PREFIX, SKIP_TRANSLATIONS
+    SKIP_TRANSLATIONS = args.english_only
     KIWIX = f'{KIWIX_ROOT}{args.dir}/'
     PREFIX = args.prefix
     TITLE_PREFIX = args.title_prefix
