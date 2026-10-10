@@ -97,6 +97,8 @@ jobs:
               e = json.load(open(f))
               if e.get('bytes', 0) < 100_000:  # leftover from a failed/empty build
                   continue
+              if e['id'] not in order:  # pack dropped from packs.json: keep its files, but don't offer it
+                  continue
               e['url'] = f'https://github.com/{repo}/releases/download/{tag}/{e["file"]}'
               if overrides.get(e['id']):  # wording fixes without rebuilding the pack
                   e['description'] = overrides[e['id']]
