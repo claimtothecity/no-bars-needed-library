@@ -2,6 +2,10 @@ name: List Kiwix files (helper)
 
 on:
   workflow_dispatch:
+    inputs:
+      sample:
+        description: 'Space-separated "dir/file.zim" to sample (blank = only list folders)'
+        default: ''
 
 permissions:
   contents: write
@@ -11,15 +15,48 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      SAMPLE: ${{ inputs.sample }}
     steps:
-      - name: List English ZIM files with sizes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: List or sample
         run: |
-          for d in wikipedia stack_exchange wikiversity wiktionary wikibooks wikivoyage wikisource wikiquote other gutenberg mooc libretexts ifixit; do
-            echo "== $d" >> kiwix-listing.txt
-            curl -fsSL "https://download.kiwix.org/zim/$d/" \
-              | grep -oE 'href="[^"]+\.zim"[^<]*</a>[^0-9]*[0-9-]+ [0-9:]+ +[0-9.]+[KMG]?' \
-              | sed -E 's/href="([^"]+)".*[0-9-]+ [0-9:]+ +([0-9.]+[KMG]?)$/\1 \2/' \
-              | grep -E '(_en_|^[a-z.]+stackexchange|_en\.|english)' >> kiwix-listing.txt || true
+          if [ -z "$SAMPLE" ]; then
+            for d in wikipedia stack_exchange wikiversity wiktionary wikibooks wikivoyage wikisource wikiquote other gutenberg mooc libretexts ifixit; do
+              echo "== $d" >> kiwix-listing.txt
+              curl -fsSL "https://download.kiwix.org/zim/$d/" \
+                | grep -oE 'href="[^"]+\.zim"[^<]*</a>[^0-9]*[0-9-]+ [0-9:]+ +[0-9.]+[KMG]?' \
+                | sed -E 's/href="([^"]+)".*[0-9-]+ [0-9:]+ +([0-9.]+[KMG]?)$/\1 \2/' \
+                | grep -E '(_en_|_en\.|english)' >> kiwix-listing.txt || true
+            done
+            gh release upload packs kiwix-listing.txt --clobber -R "$GITHUB_REPOSITORY"
+            exit 0
+          fi
+          pip install -q libzim
+          for f in $SAMPLE; do
+            curl -fsSL -o z.zim "https://download.kiwix.org/zim/$f"
+            python3 - "$f" >> kiwix-sample.txt <<'PY'
+          import sys
+          from libzim.reader import Archive
+          z = Archive('z.zim')
+          print('=' * 30, sys.argv[1], 'entries', z.all_entry_count)
+          for k in z.metadata_keys:
+              if not k.startswith('Illustration'):
+                  try: print('META', k, '=', bytes(z.get_metadata(k))[:300].decode('utf-8', 'replace'))
+                  except Exception as e: print('META', k, 'err', e)
+          shown, html = 0, []
+          for i in range(z.all_entry_count):
+              e = z._get_entry_by_id(i)
+              if e.is_redirect: continue
+              it = e.get_item()
+              if shown < 60 and i % max(1, z.all_entry_count // 60) == 0:
+                  print('ENTRY', it.mimetype, '|', e.path, '|', e.title[:80]); shown += 1
+              if it.mimetype.startswith('text/html') and len(html) < 3 and i % max(1, z.all_entry_count // 7) == 0:
+                  html.append((e.path, bytes(it.content).decode('utf-8', 'replace')))
+          for p, h in html:
+              print('-' * 20, 'HTML', p, len(h)); print(h[:7000])
+          PY
+            rm -f z.zim
           done
-          wc -l kiwix-listing.txt
-          gh release upload packs kiwix-listing.txt --clobber -R "$GITHUB_REPOSITORY"
+          gh release upload packs kiwix-sample.txt --clobber -R "$GITHUB_REPOSITORY"
