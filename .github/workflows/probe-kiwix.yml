@@ -1,0 +1,25 @@
+name: List Kiwix files (helper)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: List English ZIM files with sizes
+        run: |
+          for d in wikipedia stack_exchange wikiversity wiktionary wikibooks wikivoyage wikisource wikiquote other gutenberg mooc libretexts ifixit; do
+            echo "== $d" >> kiwix-listing.txt
+            curl -fsSL "https://download.kiwix.org/zim/$d/" \
+              | grep -oE 'href="[^"]+\.zim"[^<]*</a>[^0-9]*[0-9-]+ [0-9:]+ +[0-9.]+[KMG]?' \
+              | sed -E 's/href="([^"]+)".*[0-9-]+ [0-9:]+ +([0-9.]+[KMG]?)$/\1 \2/' \
+              | grep -E '(_en_|^[a-z.]+stackexchange|_en\.|english)' >> kiwix-listing.txt || true
+          done
+          wc -l kiwix-listing.txt
+          gh release upload packs kiwix-listing.txt --clobber -R "$GITHUB_REPOSITORY"
