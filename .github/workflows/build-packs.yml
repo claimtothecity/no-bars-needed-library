@@ -85,6 +85,7 @@ jobs:
         run: |
           mkdir -p meta && cd meta
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*.json' --clobber || true
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' > ../assets.txt
           rm -f catalog.json
           python3 - <<'EOF'
           import glob, json, os
@@ -96,6 +97,8 @@ jobs:
           for f in glob.glob('*.json'):
               e = json.load(open(f))
               if e.get('bytes', 0) < 100_000:  # leftover from a failed/empty build
+                  continue
+              if e['file'] not in open('../assets.txt').read().split():  # the pack file itself never uploaded
                   continue
               if e['id'] not in order:  # pack dropped from packs.json: keep its files, but don't offer it
                   continue

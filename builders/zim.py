@@ -99,6 +99,22 @@ def html_to_sections(html):
     return sections
 
 
+def trim_sections(sections, limit):
+    """Keep sections in order until `limit` characters (the lead and main sections of long articles)."""
+    out, n = [], 0
+    for heading, paras in sections:
+        kept = []
+        for p in paras:
+            if n + len(p) > limit:
+                break
+            kept.append(p); n += len(p)
+        if kept:
+            out.append((heading, kept))
+        if n >= limit or len(kept) < len(paras):
+            break
+    return out
+
+
 def iter_articles(zim_path):
     zim = Archive(zim_path)
     for i in range(zim.all_entry_count):
@@ -149,6 +165,7 @@ def main():
     ap.add_argument('--license', default='CC BY-SA 4.0')
     ap.add_argument('--english-only', action='store_true', help='skip translated pages like Page/es')
     ap.add_argument('--title-prefix', default='', help='only keep articles whose title starts with this (e.g. Cookbook:)')
+    ap.add_argument('--max-article-chars', type=int, default=0, help='keep only the first N characters of each article (0 = all)')
     args = ap.parse_args()
     global KIWIX, PREFIX, TITLE_PREFIX, SKIP_TRANSLATIONS
     SKIP_TRANSLATIONS = args.english_only
@@ -193,6 +210,8 @@ def main():
                 seen.add(title)
                 url = args.site + urllib.parse.quote(path)
                 shown = title[len(args.title_prefix):].strip() if args.title_prefix and title.startswith(args.title_prefix) else title
+                if args.max_article_chars:
+                    sections = trim_sections(sections, args.max_article_chars)
                 w.add(shown, url, sections)
         os.remove(zim_path)
     w.close()

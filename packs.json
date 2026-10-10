@@ -146,7 +146,7 @@
   },
   {
     "id": "wiki-popular-full",
-    "cmd": "python builders/zim.py --id wiki-popular-full --flavours top_nopic --topic general --name 'Wikipedia popular articles (full)' --description 'Wikipedia popular full' --queries 'World War II;photosynthesis;Taylor Swift;Roman Empire'",
-    "description": "The full text of Wikipedia's most-read articles (not just the opening sections like Wikipedia essentials). Large download. Overlaps with Wikipedia essentials, history, geography and science; pick this one instead of essentials if you have room."
+    "cmd": "python builders/zim.py --id wiki-popular-full --flavours top_nopic --max-article-chars 18000 --topic general --name 'Wikipedia popular articles (full)' --description 'Wikipedia popular full' --queries 'World War II;photosynthesis;Taylor Swift;Roman Empire'",
+    "description": "Wikipedia's 50,000 most-read articles in depth (the main sections of each, not just the opening like Wikipedia essentials). Large download. Overlaps with Wikipedia essentials, history, geography and science; pick this one instead of essentials if you have room."
   }
 ]

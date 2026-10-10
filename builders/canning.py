@@ -105,7 +105,7 @@ def main():
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tf:
             tf.write(bytes(item.content)); pdf = tf.name
         subprocess.run(['pdftotext', '-enc', 'UTF-8', '-nopgbrk', pdf, pdf + '.txt'], check=True)
-        text = open(pdf + '.txt', encoding='utf-8', errors='replace').read().replace('\u00a0', ' ')
+        text = open(pdf + '.txt', encoding='utf-8', errors='replace').read().replace('\u00a0', ' ').replace('\ufffd', ' ')
         text = '\n'.join(l for l in text.splitlines() if '....' not in l)  # table-of-contents leader lines
         os.remove(pdf); os.remove(pdf + '.txt')
         m = re.search(r'GUIDE0?(\d)', e.path, re.I)

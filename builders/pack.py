@@ -107,6 +107,8 @@ class PackWriter:
         self.db.execute('VACUUM')
         self.db.close()
         size = os.path.getsize(self.path)
+        if size > 1_950_000_000:  # GitHub release assets must be under 2 GiB; don't publish a manifest for a file that can't upload
+            raise SystemExit(f'pack is {size / 1e9:.2f} GB - over the 2 GB release limit; build it smaller (e.g. --max-article-chars)')
         print(f'done: {self.docs} docs, {self.chunks} chunks, {self.chars / 1e6:.1f} M chars, '
               f'{size / 1e6:.1f} MB in {time.time() - self.started:.0f}s')
         return size
