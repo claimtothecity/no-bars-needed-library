@@ -105,14 +105,15 @@ def score(div):
         return 0
 
 
-def cap(paras, limit):
+def cap(paras, limit, note=' (Shortened; the full text is at the source link.)'):
     out, n = [], 0
     for p in paras:
         if n + len(p) > limit:
             rest = limit - n
             if rest > 200:
-                out.append(p[:rest].rsplit(' ', 1)[0] + ' …')
-            out.append('(Answer shortened; the full text is at the source link.)')
+                out.append(p[:rest].rsplit(' ', 1)[0] + ' …' + note)
+            elif out:
+                out[-1] += note
             break
         out.append(p); n += len(p)
     return out
@@ -138,19 +139,22 @@ def parse(args):
         if not answers:
             return None
         answers.sort(key=lambda x: (not x[0], -x[1]))
-        q_paras = prose(q.select_one('.js-post-body') or q.select_one('.s-prose'))
-        if q_paras:
-            q_paras = cap(q_paras, 2000)
-            q_paras.append(f'(Question asked by {author(q, "asked")}; score {score(q)}.)')
-        sections = [('Question', q_paras)]
+        # A short version of the question goes in front of every answer, so each passage the app finds
+        # carries both the question and an answer (a question on its own doesn't help anyone).
+        q_text = ' '.join(prose(q.select_one('.js-post-body') or q.select_one('.s-prose')))
+        if len(q_text) > 350:
+            q_text = q_text[:350].rsplit(' ', 1)[0] + ' …'
+        asker = author(q, 'asked')
+        sections = []
         for accepted, s, a in answers[:MAX_ANSWERS]:
             body = prose(a.select_one('.js-post-body') or a.select_one('.s-prose'))
             if not body:
                 continue
             who = author(a, 'answered')
-            label = f'{"Accepted answer" if accepted else "Answer"} by {who} (score {s})'
-            sections.append((label, cap(body, ANSWER_CHARS)))
-        if len(sections) < 2:
+            label = f'{"accepted answer" if accepted else "answer"} by {who} (score {s})'
+            lead = [f'Question (asked by {asker}): {q_text}'] if q_text else []
+            sections.append((label, lead + ['Answer: ' + body[0]] + cap(body[1:], ANSWER_CHARS - len(body[0]))))
+        if not sections:
             return None
         return site, qid, title, sections
     except Exception:

@@ -14,6 +14,16 @@ from pack import PackWriter, write_manifest, sample_report, clean_ws
 KIWIX = 'https://download.kiwix.org/zim/other/'
 UA = {'User-Agent': 'NoBarsNeededLibraryBuilder/1.0 (https://github.com/claimtothecity/no-bars-needed-library)'}
 SITE = 'https://nchfp.uga.edu/'
+GUIDES = {
+    'intro': 'USDA canning guide: introduction and how to use it',
+    '1': 'USDA canning guide 1: principles of home canning',
+    '2': 'USDA canning guide 2: fruit and fruit products',
+    '3': 'USDA canning guide 3: tomatoes and tomato products',
+    '4': 'USDA canning guide 4: vegetables and vegetable products',
+    '5': 'USDA canning guide 5: poultry, red meats and seafood',
+    '6': 'USDA canning guide 6: fermented foods and pickled vegetables',
+    '7': 'USDA canning guide 7: jams and jellies',
+}
 NOISE = re.compile(r'^(\d{1,3}|Page \d+.*|USDA Complete Guide to Home Canning.*|\d-\d+|Guide \d+\s*$)$', re.I)
 
 
@@ -94,12 +104,12 @@ def main():
             continue
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tf:
             tf.write(bytes(item.content)); pdf = tf.name
-        subprocess.run(['pdftotext', '-nopgbrk', pdf, pdf + '.txt'], check=True)
-        text = open(pdf + '.txt', encoding='utf-8', errors='replace').read()
+        subprocess.run(['pdftotext', '-enc', 'UTF-8', '-nopgbrk', pdf, pdf + '.txt'], check=True)
+        text = open(pdf + '.txt', encoding='utf-8', errors='replace').read().replace('\u00a0', ' ')
+        text = '\n'.join(l for l in text.splitlines() if '....' not in l)  # table-of-contents leader lines
         os.remove(pdf); os.remove(pdf + '.txt')
-        lines = [l.strip() for l in text.splitlines() if l.strip()]
-        title = next((l for l in lines[:15] if 'guide' in l.lower() and len(l) < 90), None) or os.path.basename(e.path)
-        title = clean_ws(re.sub(r'\.pdf$', '', title))
+        m = re.search(r'GUIDE0?(\d)', e.path, re.I)
+        title = GUIDES.get(m.group(1) if m else 'intro', 'USDA Complete Guide to Home Canning')
         secs = sections_from_text(text)
         added = w.add(title, SITE, secs)
         report.append(f'pdf {e.path}: {title} -> {len(secs)} sections, {len(text)} chars, added={added}')
