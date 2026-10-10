@@ -140,11 +140,6 @@
     "description": "Wikipedia's computing and technology articles: hardware, software, networks, the internet, programming and security. Overlaps a little with Wikipedia essentials and science."
   },
   {
-    "id": "wikiquote",
-    "cmd": "python builders/zim.py --id wikiquote --dir wikiquote --prefix wikiquote_en_ --flavours all_nopic --site https://en.wikiquote.org/wiki/ --credit 'Text from Wikiquote (Wikiquote contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic general --name 'Wikiquote quotations' --description 'Wikiquote' --queries 'Abraham Lincoln;courage;Shakespeare'",
-    "description": "Famous quotations by person, work and theme, with sources (Wikiquote). No overlap with other packs."
-  },
-  {
     "id": "wiktionary-simple",
     "cmd": "python builders/zim.py --id wiktionary-simple --dir wiktionary --prefix wiktionary_en_ --flavours simple_all_nopic --site https://simple.wiktionary.org/wiki/ --credit 'Text from the Simple English Wiktionary (Wiktionary contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic general --name 'Dictionary (Simple English Wiktionary)' --description 'Simple Wiktionary' --queries 'abandon;benevolent;run'",
     "description": "A plain-language English dictionary: meanings, word forms and example sentences for about 30,000 words. Tiny."
