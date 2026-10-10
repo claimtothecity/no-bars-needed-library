@@ -73,5 +73,85 @@
     "id": "wikibooks-cookbook",
     "cmd": "python builders/zim.py --id wikibooks-cookbook --dir wikibooks --prefix wikibooks_en_ --flavours 'all_nopic|all_maxi' --title-prefix 'Cookbook:' --site https://en.wikibooks.org/wiki/ --credit 'Text from the Wikibooks Cookbook (Wikibooks contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic food --name 'Wikibooks Cookbook' --description 'Wikibooks Cookbook' --queries 'bread;pancakes;canning;substitute eggs'",
     "description": "The Wikibooks Cookbook: thousands of recipes plus cooking techniques, ingredients, substitutions and food preservation. No overlap with the other packs."
+  },
+  {
+    "id": "usda-canning",
+    "cmd": "python builders/canning.py --id usda-canning",
+    "description": "The USDA Complete Guide to Home Canning (2015): safe canning of fruits, tomatoes, vegetables, meat, fish, pickles, jams and jellies, with processing times by altitude. Small. Overlaps a little with the Wikibooks Cookbook and Cooking Q&A."
+  },
+  {
+    "id": "se-cooking",
+    "cmd": "python builders/stackexchange.py --id se-cooking --sites cooking.stackexchange.com,coffee.stackexchange.com,homebrew.stackexchange.com,vegetarianism.stackexchange.com --topic food --name 'Cooking Q&A' --description 'Cooking Q&A' --queries 'sourdough starter;substitute buttermilk;cast iron rust;food safety leftovers'",
+    "description": "Practical cooking questions answered by cooks (Seasoned Advice), plus coffee, home brewing and vegetarian cooking. Overlaps with the Wikibooks Cookbook (recipes) and USDA canning guide."
+  },
+  {
+    "id": "se-diy",
+    "cmd": "python builders/stackexchange.py --id se-diy --sites diy.stackexchange.com --topic home --name 'Home repair & DIY Q&A' --description 'Home repair & DIY Q&A' --queries 'leaking faucet;circuit breaker tripping;drywall patch;water heater' --answers 2",
+    "description": "Home improvement questions answered by tradespeople and DIYers: plumbing, electrical, carpentry, heating/cooling, roofing, appliances. Larger download. No overlap with other packs."
+  },
+  {
+    "id": "se-outdoors",
+    "cmd": "python builders/stackexchange.py --id se-outdoors --sites outdoors.stackexchange.com --topic survival --name 'Outdoors & camping Q&A' --description 'Outdoors & camping Q&A' --queries 'water purification;hypothermia;bear safety;tent condensation'",
+    "description": "Hiking, camping, backpacking, climbing and wilderness questions from experienced outdoorspeople. Overlaps a little with Army survival & first aid."
+  },
+  {
+    "id": "se-gardening",
+    "cmd": "python builders/stackexchange.py --id se-gardening --sites gardening.stackexchange.com --topic plants --name 'Gardening Q&A' --description 'Gardening Q&A' --queries 'tomato leaves yellow;compost;lawn weeds;pruning roses'",
+    "description": "Gardening and landscaping questions: vegetables, lawns, trees, houseplants, pests and soil. Pairs with Wikipedia plants & fungi and the USDA PLANTS checklist."
+  },
+  {
+    "id": "se-vehicles",
+    "cmd": "python builders/stackexchange.py --id se-vehicles --sites mechanics.stackexchange.com,bicycles.stackexchange.com --topic home --name 'Car & bike repair Q&A' --description 'Car & bike repair Q&A' --queries 'check engine light;brake pads;battery dead;flat tire;derailleur'",
+    "description": "Car and motorcycle maintenance and repair (Motor Vehicle Maintenance & Repair) plus bicycle repair and riding questions. No overlap with other packs."
+  },
+  {
+    "id": "se-money",
+    "cmd": "python builders/stackexchange.py --id se-money --sites money.stackexchange.com --topic general --name 'Personal finance Q&A' --description 'Personal finance Q&A' --queries 'credit score;Roth IRA;mortgage refinance;budget'",
+    "description": "Personal finance and money questions: budgeting, credit, loans, taxes, retirement accounts, investing basics (mostly US). General information, not financial advice."
+  },
+  {
+    "id": "se-family",
+    "cmd": "python builders/stackexchange.py --id se-family --sites parenting.stackexchange.com,pets.stackexchange.com --topic general --name 'Parenting & pets Q&A' --description 'Parenting & pets Q&A' --queries 'toddler tantrum;sleep training;dog chewing;cat litter'",
+    "description": "Parenting questions from babies to teens, and pet care questions (dogs, cats, fish, birds, small animals). No overlap with other packs."
+  },
+  {
+    "id": "se-ham",
+    "cmd": "python builders/stackexchange.py --id se-ham --sites ham.stackexchange.com --topic survival --name 'Ham radio Q&A' --description 'Ham radio Q&A' --queries 'antenna;repeater;license exam;emergency communication'",
+    "description": "Amateur (ham) radio questions: licensing, antennas, radios, repeaters and emergency communications. Small."
+  },
+  {
+    "id": "se-law",
+    "cmd": "python builders/stackexchange.py --id se-law --sites law.stackexchange.com --topic general --name 'Law Q&A' --description 'Law Q&A' --queries 'tenant rights;copyright;contract;small claims'",
+    "description": "Questions about how the law works, answered by lawyers and knowledgeable members (mostly US and UK). General information, not legal advice."
+  },
+  {
+    "id": "se-making",
+    "cmd": "python builders/stackexchange.py --id se-making --sites woodworking.stackexchange.com,crafts.stackexchange.com,3dprinting.stackexchange.com,sustainability.stackexchange.com,lifehacks.stackexchange.com --topic home --name 'Making & fixing things Q&A' --description 'Making & fixing things Q&A' --queries 'wood glue;finish;sewing;3d print warping;remove stain'",
+    "description": "Woodworking, crafts, 3D printing, sustainable living and everyday lifehacks. Small. Overlaps a little with Home repair & DIY."
+  },
+  {
+    "id": "se-fitness",
+    "cmd": "python builders/stackexchange.py --id se-fitness --sites fitness.stackexchange.com --topic medical --name 'Fitness Q&A' --description 'Fitness Q&A' --queries 'muscle soreness;running;protein;stretching'",
+    "description": "Exercise, strength training, running and fitness questions. Small. General information, not medical advice."
+  },
+  {
+    "id": "wiki-computers",
+    "cmd": "python builders/zim.py --id wiki-computers --flavours computer_nopic --topic general --name 'Wikipedia computers & technology' --description 'Wikipedia computers' --queries 'wifi router;malware;USB;operating system'",
+    "description": "Wikipedia's computing and technology articles: hardware, software, networks, the internet, programming and security. Overlaps a little with Wikipedia essentials and science."
+  },
+  {
+    "id": "wikiquote",
+    "cmd": "python builders/zim.py --id wikiquote --dir wikiquote --prefix wikiquote_en_ --flavours all_nopic --site https://en.wikiquote.org/wiki/ --credit 'Text from Wikiquote (Wikiquote contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic general --name 'Wikiquote quotations' --description 'Wikiquote' --queries 'Abraham Lincoln;courage;Shakespeare'",
+    "description": "Famous quotations by person, work and theme, with sources (Wikiquote). No overlap with other packs."
+  },
+  {
+    "id": "wiktionary-simple",
+    "cmd": "python builders/zim.py --id wiktionary-simple --dir wiktionary --prefix wiktionary_en_ --flavours simple_all_nopic --site https://simple.wiktionary.org/wiki/ --credit 'Text from the Simple English Wiktionary (Wiktionary contributors), via Kiwix. Licensed CC BY-SA 4.0.' --topic general --name 'Dictionary (Simple English Wiktionary)' --description 'Simple Wiktionary' --queries 'abandon;benevolent;run'",
+    "description": "A plain-language English dictionary: meanings, word forms and example sentences for about 30,000 words. Tiny."
+  },
+  {
+    "id": "wiki-popular-full",
+    "cmd": "python builders/zim.py --id wiki-popular-full --flavours top_nopic --topic general --name 'Wikipedia popular articles (full)' --description 'Wikipedia popular full' --queries 'World War II;photosynthesis;Taylor Swift;Roman Empire'",
+    "description": "The full text of Wikipedia's most-read articles (not just the opening sections like Wikipedia essentials). Large download. Overlaps with Wikipedia essentials, history, geography and science; pick this one instead of essentials if you have room."
   }
 ]

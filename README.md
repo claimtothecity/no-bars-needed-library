@@ -26,13 +26,23 @@ Packs are built by GitHub Actions (`Build library packs` workflow) and published
 | Wikivoyage travel guide | Kiwix `wikivoyage_en_all` | CC BY-SA 4.0, Wikivoyage contributors |
 | Appropedia (off-grid how-to) | Kiwix `appropedia_en_all` | CC BY-SA 4.0, Appropedia contributors |
 | Wikibooks Cookbook | Kiwix `wikibooks_en_all` (Cookbook: pages only) | CC BY-SA 4.0, Wikibooks contributors |
+| USDA home canning guide | USDA *Complete Guide to Home Canning* (2015), Kiwix `usda-2015_en` | Public domain (U.S. Government work) |
+| Stack Exchange Q&A packs (cooking, home repair, outdoors, gardening, car & bike repair, personal finance, parenting & pets, ham radio, law, making things, fitness) | Kiwix `stack_exchange` ZIMs; questions with an accepted or upvoted answer, up to 3 answers each, author named on every answer, linked to the original question | CC BY-SA 4.0 (older posts 3.0 / 2.5), Stack Exchange contributors |
+| Wikipedia computers & technology / popular articles (full) | Kiwix `wikipedia_en_computer_nopic`, `wikipedia_en_top_nopic` | CC BY-SA 4.0, Wikipedia contributors |
+| Wikiquote quotations | Kiwix `wikiquote_en_all_nopic` | CC BY-SA 4.0, Wikiquote contributors |
+| Dictionary (Simple English Wiktionary) | Kiwix `wiktionary_en_simple_all_nopic` | CC BY-SA 4.0, Wiktionary contributors |
 
 Wikipedia text is reformatted into plain-text passages (tables, images and references removed).
 Under CC BY-SA, these packs are shared under the same license; each pack carries its credit line
 in its `meta` table, and the app shows it on the Library screen.
 
 Not included on purpose: OpenStax, wikiHow and iFixit (non-commercial licenses), StatPearls (NC-ND), MedlinePlus
-drug and encyclopedia pages (licensed from third parties; only NLM-written health topics are used).
+drug and encyclopedia pages (licensed from third parties; only NLM-written health topics are used), Energypedia
+(CC BY-NC-SA), LibreTexts (mostly NC), WikEM (its terms restrict AI use and the name), Project Gutenberg (trademark
+terms for commercial redistribution), the CIA World Factbook ZIM (2020 data, discontinued).
+
+Stack Exchange note: the content is CC BY-SA; Stack Exchange's data-dump terms only exclude training large language
+models, which these packs are not used for (passages are searched on the phone and quoted with attribution).
 
 ## Pack format (version 1)
 
